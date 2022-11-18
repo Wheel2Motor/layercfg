@@ -43,7 +43,7 @@ class LayerConfig:
             path:str,
             ensure_exists:bool=True
             ) -> str:
-        target = os.path.join(self.root, path)
+        target = os.path.join(self.root, path) if path else self.root
         if ensure_exists and not os.path.exists(target):
             raise Exception("Config dir not found: {0}".format(target))
         return target
@@ -54,7 +54,7 @@ class LayerConfig:
             path:str,
             ensure_exists:bool=True
             ) -> str:
-        target = os.path.join(self.root, path)
+        target = os.path.join(self.root, path) if path else self.root
         target_file = os.path.join(target, self.TEXT_CONFIG_FILE_NAME)
         if ensure_exists and not os.path.exists(target_file):
             raise Exception("Config file not found: {0}".format(target))
@@ -91,19 +91,17 @@ class LayerConfig:
                 f.write(out)
 
 
-    def list_sublayer(
-            self,
-            path:str
-            ) -> list:
-        target = self.get_config_dir(path, True)
-        return list(filter(lambda item: os.path.isdir(item),
-                           os.listdir(target)))
+    def list_sublayer(self) -> list:
+        return list(filter(lambda item: os.path.isdir(self.get_config_dir(item)),
+                           os.listdir(self.root)))
 
 
 if __name__ == "__main__":
-    cfg = LayerConfig(".")
-    start = "liwei"
-    for i in range(10):
-        start = os.path.join(start, str(i))
-        cfg.init_path(start)
-
+    cfg_root = LayerConfig("LWConfig")
+    cfg_root.init_path("global")
+    cfg_root.init_path("project")
+    cfg_proj = LayerConfig(cfg_root.get_config_dir("project"))
+    cfg_proj.init_path("A")
+    cfg_proj.init_path("B")
+    cfg_proj.init_path("C")
+    cfg_proj.set_config(None, "name", 123)
